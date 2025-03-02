@@ -4,7 +4,7 @@ import GameBoard from './GameBoard';
 import Dice from './Dice';
 import PlayerInfo from './PlayerInfo';
 import AnimationToggle from './AnimationToggle';
-import { createInitialGameState, rollDice, getValidMoves, moveToken, PLAYERS } from '../game-logic/gameState';
+import { createInitialGameState, rollDice, getValidMoves, moveToken, PLAYERS, endTurn } from '../game-logic/gameState';
 import { delayedAiMove } from '../game-logic/aiController';
 
 /**
@@ -22,6 +22,16 @@ function GameController() {
   // Update valid moves when game state changes
   useEffect(() => {
     setValidMoves(getValidMoves(gameState));
+    
+    // Check if no valid moves are available after rolling
+    if (gameState.diceRolled && getValidMoves(gameState).length === 0 && !gameState.tokenMoved) {
+      // If no valid moves, end the turn after a short delay
+      const timer = setTimeout(() => {
+        setGameState(prevState => endTurn(prevState));
+      }, 1500);
+      
+      return () => clearTimeout(timer);
+    }
   }, [gameState]);
   
   // Handle AI turns
@@ -33,16 +43,39 @@ function GameController() {
       // Set AI thinking state to prevent multiple AI moves
       setIsAiThinking(true);
       
-      // Make AI move after a delay
-      delayedAiMove(gameState, setGameState, 1000).then(() => {
+      // First, roll the dice if not rolled yet
+      if (!gameState.diceRolled) {
+        setTimeout(() => {
+          setGameState(prevState => rollDice(prevState));
+          setIsAiThinking(false);
+        }, 1000);
+        return;
+      }
+      
+      // Then make a move if possible
+      if (gameState.diceRolled && !gameState.tokenMoved) {
+        // Make AI move after a delay
+        delayedAiMove(gameState, setGameState, 1000).then(() => {
+          setIsAiThinking(false);
+        });
+      } else if (gameState.diceRolled && gameState.tokenMoved && gameState.extraTurn) {
+        // If AI got an extra turn, roll again
+        setTimeout(() => {
+          setGameState(prevState => rollDice(prevState));
+          setIsAiThinking(false);
+        }, 1000);
+      } else {
+        // AI turn is complete
         setIsAiThinking(false);
-      });
+      }
     }
   }, [gameState, isAiThinking]);
   
   // Handle dice roll
-  const handleDiceRoll = (value) => {
-    setGameState(prevState => rollDice(prevState));
+  const handleDiceRoll = () => {
+    if (canRollDice) {
+      setGameState(prevState => rollDice(prevState));
+    }
   };
   
   // Handle token selection
@@ -59,7 +92,7 @@ function GameController() {
   const isPlayerTurn = currentPlayer === 'red'; // Assuming 'red' is the human player
   
   // Determine if the dice can be rolled
-  const canRollDice = isPlayerTurn && (!gameState.diceRolled || (gameState.extraTurn && gameState.tokenMoved));
+  const canRollDice = isPlayerTurn && !isAiThinking && (!gameState.diceRolled || (gameState.extraTurn && gameState.tokenMoved));
   
   // Render the game log
   const renderGameLog = () => {
@@ -102,6 +135,7 @@ function GameController() {
               canRoll={canRollDice}
               onRoll={handleDiceRoll}
               isRolling={gameState.isRolling}
+              disabled={!canRollDice || isAiThinking}
             />
           </div>
         </div>

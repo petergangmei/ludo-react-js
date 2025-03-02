@@ -8,11 +8,14 @@ import { areAnimationsEnabled } from '../utils/animations';
  * It displays the current dice value and triggers a callback when rolled.
  * 
  * @param {Object} props - Component props
- * @param {Function} props.onRoll - Callback function called with the dice value when rolled
+ * @param {number} props.value - The current dice value
+ * @param {Function} props.onRoll - Callback function called when the dice is rolled
+ * @param {boolean} props.canRoll - Whether the dice can be rolled
  * @param {boolean} props.disabled - Whether the dice is disabled
+ * @param {boolean} props.isRolling - Whether the dice is currently rolling
  */
-function Dice({ onRoll, disabled = false }) {
-  const [value, setValue] = useState(1);
+function Dice({ value, onRoll, canRoll = true, disabled = false, isRolling = false }) {
+  const [displayValue, setDisplayValue] = useState(value || 1);
   const [rolling, setRolling] = useState(false);
   const [animationsEnabled, setAnimationsEnabled] = useState(true);
   
@@ -21,6 +24,13 @@ function Dice({ onRoll, disabled = false }) {
     setAnimationsEnabled(areAnimationsEnabled());
   }, []);
   
+  // Update display value when prop value changes
+  useEffect(() => {
+    if (value) {
+      setDisplayValue(value);
+    }
+  }, [value]);
+  
   // Handle dice roll animation
   useEffect(() => {
     let rollInterval;
@@ -28,16 +38,14 @@ function Dice({ onRoll, disabled = false }) {
     if (rolling) {
       // Animate dice roll by changing values rapidly
       rollInterval = setInterval(() => {
-        setValue(Math.floor(Math.random() * 6) + 1);
+        setDisplayValue(Math.floor(Math.random() * 6) + 1);
       }, 100);
       
       // Stop rolling after 1 second and call the onRoll callback
       setTimeout(() => {
         clearInterval(rollInterval);
         setRolling(false);
-        const finalValue = Math.floor(Math.random() * 6) + 1;
-        setValue(finalValue);
-        if (onRoll) onRoll(finalValue);
+        if (onRoll) onRoll();
       }, animationsEnabled ? 1000 : 300);
     }
     
@@ -46,14 +54,14 @@ function Dice({ onRoll, disabled = false }) {
   
   // Function to handle dice roll
   const handleRoll = () => {
-    if (!disabled && !rolling) {
+    if (canRoll && !disabled && !rolling) {
       setRolling(true);
     }
   };
   
   // Render dice dots based on value
   const renderDots = () => {
-    switch (value) {
+    switch (displayValue) {
       case 1:
         return <div className="dot center"></div>;
       case 2:
@@ -110,9 +118,9 @@ function Dice({ onRoll, disabled = false }) {
   const getAnimationClasses = () => {
     if (!animationsEnabled) return '';
     
-    if (rolling) {
+    if (rolling || isRolling) {
       return 'animate-spin';
-    } else if (!disabled) {
+    } else if (canRoll && !disabled) {
       return 'hover:animate-pulse';
     }
     return '';
@@ -120,10 +128,10 @@ function Dice({ onRoll, disabled = false }) {
   
   return (
     <div 
-      className={`w-16 h-16 bg-white rounded-lg shadow-md flex flex-wrap p-2 cursor-pointer transform transition-all duration-300 
-        ${rolling ? 'rotate-12 scale-110' : ''} 
-        ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:scale-110'} 
-        ${getAnimationClasses()}`}
+      className={`w-16 h-16 bg-white rounded-lg shadow-md flex flex-wrap p-2 relative
+        ${(canRoll && !disabled) ? 'cursor-pointer hover:scale-110' : 'cursor-not-allowed opacity-70'} 
+        ${rolling || isRolling ? 'rotate-12 scale-110' : ''} 
+        ${getAnimationClasses()} transform transition-all duration-300`}
       onClick={handleRoll}
     >
       <style>{`
@@ -154,7 +162,7 @@ function Dice({ onRoll, disabled = false }) {
           animation: dice-roll 1s ease-in-out;
         }
       `}</style>
-      <div className={`relative w-full h-full ${rolling && animationsEnabled ? 'animate-roll' : ''}`}>
+      <div className={`relative w-full h-full ${(rolling || isRolling) && animationsEnabled ? 'animate-roll' : ''}`}>
         {renderDots()}
       </div>
     </div>
