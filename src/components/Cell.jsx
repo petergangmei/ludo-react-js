@@ -4,10 +4,10 @@ import React from 'react';
  * Cell Component
  * 
  * This component renders a single cell on the game board.
- * It can display different types of cells (normal, safe, home, etc.) and contain tokens.
+ * It can display different types of cells (normal, safe, home, start, etc.) and contain tokens.
  * 
  * @param {Object} props - Component props
- * @param {string} props.type - The type of cell ('normal', 'safe', 'home', 'start')
+ * @param {string} props.type - The type of cell ('normal', 'safe', 'home', 'start', 'center')
  * @param {string} props.color - The color of the cell (for colored paths)
  * @param {Array} props.tokens - Array of tokens in this cell
  * @param {Function} props.onCellClick - Callback function called when the cell is clicked
@@ -15,6 +15,7 @@ import React from 'react';
 function Cell({ type = 'normal', color, tokens = [], onCellClick }) {
   // Define background color classes based on cell type and color
   const getBgColorClass = () => {
+    if (type === 'center') return 'bg-gray-300';
     if (type === 'safe') return 'bg-gray-200';
     if (type === 'home') return 'bg-gray-100';
     if (type === 'start') {
@@ -40,14 +41,24 @@ function Cell({ type = 'normal', color, tokens = [], onCellClick }) {
   
   // Define border color classes based on cell type
   const getBorderColorClass = () => {
+    if (type === 'center') return 'border-gray-500';
     if (type === 'safe') return 'border-gray-400';
     if (type === 'home') return 'border-gray-300';
     if (type === 'start') {
       switch (color) {
-        case 'red': return 'border-red-400';
-        case 'green': return 'border-green-400';
-        case 'yellow': return 'border-yellow-400';
-        case 'blue': return 'border-blue-400';
+        case 'red': return 'border-red-500';
+        case 'green': return 'border-green-500';
+        case 'yellow': return 'border-yellow-500';
+        case 'blue': return 'border-blue-500';
+        default: return 'border-gray-300';
+      }
+    }
+    if (color) {
+      switch (color) {
+        case 'red': return 'border-red-300';
+        case 'green': return 'border-green-300';
+        case 'yellow': return 'border-yellow-300';
+        case 'blue': return 'border-blue-300';
         default: return 'border-gray-300';
       }
     }
@@ -88,7 +99,7 @@ function Cell({ type = 'normal', color, tokens = [], onCellClick }) {
   
   return (
     <div 
-      className={`relative w-full h-full border ${getBorderColorClass()} ${getBgColorClass()} 
+      className={`relative w-full h-full border-2 ${getBorderColorClass()} ${getBgColorClass()} 
         ${onCellClick ? 'cursor-pointer hover:bg-opacity-80' : ''}`}
       onClick={handleClick}
     >

@@ -110,4 +110,45 @@
   animation: moveToken 0.8s ease-in-out;
 }
 
+/* Custom styles for the game board */
+.ludo-board {
+  display: grid;
+  grid-template-columns: repeat(11, 1fr);
+  grid-template-rows: repeat(11, 1fr);
+  gap: 1px;
+  width: 100%;
+  height: 100%;
+  aspect-ratio: 1 / 1;
+}
+
+.ludo-cell {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+/* Make sure tokens are visible */
+.token {
+  z-index: 10;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Ensure the board has proper dimensions */
+.board-container {
+  width: 100%;
+  max-width: 600px;
+  aspect-ratio: 1 / 1;
+  margin: 0 auto;
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .ludo-board {
+    gap: 0;
+  }
+}
+
 /* Custom styles can be added below */

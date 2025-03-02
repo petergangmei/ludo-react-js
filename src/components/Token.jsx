@@ -27,10 +27,10 @@ function Token({ color, id, isHome, isStart, isSelectable, onSelect }) {
   
   // Define color classes based on the token color
   const colorClasses = {
-    red: 'bg-red-500 hover:bg-red-600',
-    green: 'bg-green-500 hover:bg-green-600',
+    red: 'bg-red-600 hover:bg-red-700',
+    green: 'bg-green-600 hover:bg-green-700',
     yellow: 'bg-yellow-500 hover:bg-yellow-600',
-    blue: 'bg-blue-500 hover:bg-blue-600',
+    blue: 'bg-blue-600 hover:bg-blue-700',
   };
   
   // Define animation classes
@@ -62,12 +62,13 @@ function Token({ color, id, isHome, isStart, isSelectable, onSelect }) {
   
   return (
     <div 
-      className={`w-8 h-8 rounded-full ${colorClasses[color]} shadow-md flex items-center justify-center text-white font-bold
-        ${isSelectable ? 'cursor-pointer transform hover:scale-110 ring-2 ring-white' : 'opacity-80'}
+      className={`w-6 h-6 md:w-8 md:h-8 rounded-full ${colorClasses[color]} shadow-md flex items-center justify-center text-white font-bold
+        ${isSelectable ? 'cursor-pointer transform hover:scale-110 ring-2 ring-white' : 'opacity-90'}
         ${isHome ? 'border-2 border-white' : ''}
         ${getAnimationClass()}
         transition-all duration-200`}
       onClick={handleClick}
+      style={{ zIndex: isSelectable ? 10 : 5 }}
     >
       {id + 1}
     </div>

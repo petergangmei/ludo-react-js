@@ -63,48 +63,42 @@ function GameBoard({ gameState, onTokenSelect }) {
     
     // If the cell is empty, render nothing
     if (cell.type === CELL_TYPES.EMPTY) {
-      return <div key={key} className="w-full h-full"></div>;
+      return <div key={key} className="ludo-cell"></div>;
     }
     
     // Render the cell with its type, color, and tokens
     return (
-      <Cell
-        key={key}
-        type={cell.type}
-        color={cell.color}
-        tokens={tokenMap[key] || []}
-      />
+      <div className="ludo-cell">
+        <Cell
+          key={key}
+          type={cell.type}
+          color={cell.color}
+          tokens={tokenMap[key] || []}
+        />
+      </div>
     );
   };
   
   // Render the board grid
   const renderBoard = () => {
-    const rows = [];
+    const cells = [];
     
     for (let row = 0; row < boardLayout.length; row++) {
-      const cols = [];
-      
       for (let col = 0; col < boardLayout[row].length; col++) {
-        cols.push(
-          <div key={`${row}-${col}`} className="w-full h-full">
+        cells.push(
+          <div key={`${row}-${col}`} style={{ gridRow: row + 1, gridColumn: col + 1 }}>
             {renderCell(row, col)}
           </div>
         );
       }
-      
-      rows.push(
-        <div key={row} className="flex w-full h-full">
-          {cols}
-        </div>
-      );
     }
     
-    return rows;
+    return cells;
   };
   
   return (
-    <div className="w-full max-w-2xl aspect-square bg-white rounded-lg shadow-xl p-4">
-      <div className="w-full h-full grid grid-cols-11 grid-rows-11 gap-1">
+    <div className="board-container">
+      <div className="ludo-board bg-white rounded-lg shadow-xl p-2">
         {renderBoard()}
       </div>
     </div>
