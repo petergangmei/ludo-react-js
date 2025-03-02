@@ -1,8 +1,8 @@
 import React from 'react';
 import Cell from './Cell';
 import Token from './Token';
-import { generateBoardLayout, CELL_TYPES, getTokenBoardPosition, PLAYERS } from '../utils/boardLayout';
-import { getValidMoves } from '../game-logic/gameState';
+import { generateBoardLayout, CELL_TYPES, getTokenBoardPosition } from '../utils/boardLayout';
+import { getValidMoves, PLAYERS } from '../game-logic/gameState';
 
 /**
  * GameBoard Component

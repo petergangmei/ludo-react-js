@@ -123,7 +123,7 @@ function GameController() {
                 <PlayerInfo 
                   key={color}
                   color={color}
-                  tokens={gameState.tokens[color]}
+                  tokens={gameState.tokenPositions[color]}
                   isCurrentPlayer={color === currentPlayer}
                 />
               ))}
