@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import GameBoard from './GameBoard';
 import Dice from './Dice';
+import PlayerInfo from './PlayerInfo';
 import { createInitialGameState, rollDice, getValidMoves, moveToken, PLAYERS } from '../game-logic/gameState';
 import { delayedAiMove } from '../game-logic/aiController';
 
@@ -59,6 +60,15 @@ function GameController() {
   // Determine if the dice can be rolled
   const canRollDice = isPlayerTurn && (!gameState.diceRolled || (gameState.extraTurn && gameState.tokenMoved));
   
+  // Render the game log
+  const renderGameLog = () => {
+    return gameState.log.map((message, index) => (
+      <div key={index} className="py-1 border-b border-gray-200 last:border-0">
+        {message}
+      </div>
+    ));
+  };
+  
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-100 to-purple-100 p-4 flex flex-col items-center">
       <div className="w-full max-w-4xl">
@@ -72,54 +82,80 @@ function GameController() {
           </Link>
         </div>
         
-        {/* Game Status */}
-        <div className="bg-white rounded-lg shadow-md p-4 mb-6">
-          <div className="flex justify-between items-center">
-            <p className="text-xl font-semibold text-blue-700">
-              {isPlayerTurn ? 'Your Turn' : `${currentPlayer.charAt(0).toUpperCase() + currentPlayer.slice(1)}'s Turn`}
-              {isAiThinking && ' (Thinking...)'}
-            </p>
-            
-            {gameState.diceValue && (
-              <div className="flex items-center">
-                <p className="mr-4 text-lg font-medium">Dice: {gameState.diceValue}</p>
-                <Dice 
-                  onRoll={handleDiceRoll} 
-                  disabled={!canRollDice || isAiThinking}
-                />
+        <div className="flex flex-col md:flex-row gap-6">
+          <div className="md:w-3/4">
+            {/* Game Status */}
+            <div className="bg-white rounded-lg shadow-md p-4 mb-6">
+              <div className="flex justify-between items-center">
+                <p className="text-xl font-semibold text-blue-700">
+                  {isPlayerTurn ? 'Your Turn' : `${currentPlayer.charAt(0).toUpperCase() + currentPlayer.slice(1)}'s Turn`}
+                  {isAiThinking && ' (Thinking...)'}
+                </p>
+                
+                {gameState.diceValue && (
+                  <div className="flex items-center">
+                    <p className="mr-4 text-lg font-medium">Dice: {gameState.diceValue}</p>
+                    <Dice 
+                      onRoll={handleDiceRoll} 
+                      disabled={!canRollDice || isAiThinking}
+                    />
+                  </div>
+                )}
+                
+                {!gameState.diceValue && (
+                  <Dice 
+                    onRoll={handleDiceRoll} 
+                    disabled={!canRollDice || isAiThinking}
+                  />
+                )}
               </div>
-            )}
+              
+              {gameState.status === 'finished' && (
+                <p className="mt-4 text-center text-2xl font-bold text-green-600">
+                  {gameState.winner === 'red' ? 'You Win!' : `${gameState.winner.charAt(0).toUpperCase() + gameState.winner.slice(1)} Wins!`}
+                </p>
+              )}
+            </div>
             
-            {!gameState.diceValue && (
-              <Dice 
-                onRoll={handleDiceRoll} 
+            {/* Player Info Section */}
+            <div className="grid grid-cols-2 gap-4 mb-6">
+              {PLAYERS.map((color) => (
+                <PlayerInfo 
+                  key={color}
+                  color={color}
+                  tokens={gameState.tokens[color]}
+                  isCurrentPlayer={color === currentPlayer}
+                />
+              ))}
+            </div>
+            
+            {/* Game Board */}
+            <GameBoard 
+              gameState={gameState}
+              onTokenSelect={handleTokenSelect}
+            />
+            
+            {/* Game Controls */}
+            <div className="mt-6 flex justify-center">
+              <button 
+                className={`bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-lg text-lg ${(!canRollDice || isAiThinking) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                onClick={() => handleDiceRoll()}
                 disabled={!canRollDice || isAiThinking}
-              />
-            )}
+              >
+                Roll Dice
+              </button>
+            </div>
           </div>
           
-          {gameState.status === 'finished' && (
-            <p className="mt-4 text-center text-2xl font-bold text-green-600">
-              {gameState.winner === 'red' ? 'You Win!' : `${gameState.winner.charAt(0).toUpperCase() + gameState.winner.slice(1)} Wins!`}
-            </p>
-          )}
-        </div>
-        
-        {/* Game Board */}
-        <GameBoard 
-          gameState={gameState}
-          onTokenSelect={handleTokenSelect}
-        />
-        
-        {/* Game Controls */}
-        <div className="mt-6 flex justify-center">
-          <button 
-            className={`bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-lg text-lg ${(!canRollDice || isAiThinking) ? 'opacity-50 cursor-not-allowed' : ''}`}
-            onClick={() => handleDiceRoll()}
-            disabled={!canRollDice || isAiThinking}
-          >
-            Roll Dice
-          </button>
+          {/* Game Log */}
+          <div className="md:w-1/4">
+            <div className="bg-white rounded-lg shadow-md p-4 h-full">
+              <h2 className="text-lg font-semibold text-blue-700 mb-2">Game Log</h2>
+              <div className="overflow-y-auto max-h-96">
+                {renderGameLog()}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

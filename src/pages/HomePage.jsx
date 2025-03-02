@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import GameStats from '../components/GameStats';
 
 /**
  * HomePage Component
@@ -16,6 +17,11 @@ function HomePage() {
         <p className="text-xl text-gray-700 max-w-md mx-auto">
           Play the classic board game against AI opponents in this React implementation
         </p>
+      </div>
+      
+      {/* Game Stats */}
+      <div className="mb-8 w-full max-w-md">
+        <GameStats />
       </div>
       
       {/* Start Game Button */}

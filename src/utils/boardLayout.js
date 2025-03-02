@@ -96,6 +96,33 @@ export const SAFE_CELLS = [
   { row: 8, col: 2 }, // Bottom-left diagonal
 ];
 
+// Define the main track positions (clockwise from top-left)
+export const MAIN_TRACK = [
+  // Top row (left to right, excluding center)
+  ...[...Array(5).keys()].map(col => ({ row: 0, col })),
+  ...[...Array(5).keys()].map(col => ({ row: 0, col: col + 6 })),
+  
+  // Right column (top to bottom, excluding center)
+  ...[...Array(5).keys()].map(row => ({ row, col: 10 })),
+  ...[...Array(5).keys()].map(row => ({ row: row + 6, col: 10 })),
+  
+  // Bottom row (right to left, excluding center)
+  ...[...Array(5).keys()].map(col => ({ row: 10, col: 10 - col })),
+  ...[...Array(5).keys()].map(col => ({ row: 10, col: 4 - col })),
+  
+  // Left column (bottom to top, excluding center)
+  ...[...Array(5).keys()].map(row => ({ row: 10 - row, col: 0 })),
+  ...[...Array(5).keys()].map(row => ({ row: 4 - row, col: 0 })),
+];
+
+// Define the starting indices on the main track for each player
+export const STARTING_INDICES = {
+  red: 0,      // Top-left
+  green: 13,   // Top-right
+  yellow: 26,  // Bottom-right
+  blue: 39     // Bottom-left
+};
+
 /**
  * Generate the initial board layout
  * 
@@ -219,16 +246,28 @@ export const getTokenBoardPosition = (player, position) => {
     return STARTING_POSITIONS[player];
   }
   
-  // If the token is in the home position, return null (not on the board)
+  // If the token is in the home position, return one of the home positions for the player
   if (position === 'home') {
-    return null;
+    // For simplicity, we'll just return the first home position
+    // In a more advanced implementation, you might want to distribute tokens across home positions
+    return HOME_POSITIONS[player][0];
   }
   
   // If the token is on the main track, calculate its position
   if (typeof position === 'number') {
-    // TODO: Implement the logic to convert a track position to a board position
-    // This will depend on the specific layout of the board
-    return null;
+    // If the position is in the home stretch
+    if (position >= 52) {
+      const homeStretchIndex = position - 52;
+      if (homeStretchIndex < HOME_STRETCH_PATHS[player].length) {
+        return HOME_STRETCH_PATHS[player][homeStretchIndex];
+      }
+      return null; // Beyond the home stretch
+    }
+    
+    // Calculate the position on the main track
+    const startingIndex = STARTING_INDICES[player];
+    const mainTrackIndex = (startingIndex + position) % 52;
+    return MAIN_TRACK[mainTrackIndex];
   }
   
   return null;

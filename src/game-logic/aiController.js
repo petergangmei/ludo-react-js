@@ -5,7 +5,7 @@
  * It implements basic decision-making logic for AI moves.
  */
 
-import { getValidMoves, moveToken, rollDice } from './gameState';
+import { getValidMoves, moveToken, rollDice, checkForCaptures } from './gameState';
 
 /**
  * Make an AI move
@@ -45,23 +45,48 @@ export const makeAiMove = (gameState) => {
 /**
  * Choose a token to move based on a simple heuristic
  * 
- * This function implements a simple strategy for choosing which token to move:
- * 1. Prefer tokens that are already on the board
- * 2. Prefer tokens that are closer to home
- * 3. If all else is equal, choose randomly
+ * This function implements a strategy for choosing which token to move:
+ * 1. Prefer moves that capture an opponent's token
+ * 2. Prefer tokens that are already on the board
+ * 3. Prefer tokens that are closer to home
+ * 4. If all else is equal, choose randomly
  * 
  * @param {Object} gameState - The current game state
  * @param {Array} validMoves - Array of valid token indices that can be moved
  * @returns {number} The index of the token to move
  */
 const chooseTokenToMove = (gameState, validMoves) => {
-  const { currentPlayerIndex, tokenPositions } = gameState;
+  const { currentPlayerIndex, diceValue, tokenPositions } = gameState;
   const currentPlayer = ['red', 'green', 'yellow', 'blue'][currentPlayerIndex];
   const currentTokens = tokenPositions[currentPlayer];
   
   // If there's only one valid move, choose it
   if (validMoves.length === 1) {
     return validMoves[0];
+  }
+  
+  // Check for moves that would capture an opponent's token
+  const capturingMoves = validMoves.filter(tokenIndex => {
+    const position = currentTokens[tokenIndex];
+    
+    // Calculate the new position
+    let newPosition;
+    if (position === 'start') {
+      newPosition = 0;
+    } else if (typeof position === 'number') {
+      newPosition = position + diceValue;
+    } else {
+      return false; // Can't capture with a token that's already home
+    }
+    
+    // Check if this move would capture an opponent's token
+    const captures = checkForCaptures(gameState, currentPlayer, newPosition);
+    return captures.length > 0;
+  });
+  
+  // If there are moves that would capture an opponent's token, choose one
+  if (capturingMoves.length > 0) {
+    return capturingMoves[Math.floor(Math.random() * capturingMoves.length)];
   }
   
   // Prefer tokens that are already on the board

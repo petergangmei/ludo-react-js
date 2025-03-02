@@ -46,6 +46,9 @@ export const createInitialGameState = () => {
     
     // Winner (if the game is finished)
     winner: null,
+    
+    // Game log for displaying messages
+    log: [],
   };
 };
 
@@ -67,12 +70,20 @@ export const rollDice = (gameState) => {
   // Check if the player gets an extra turn (rolled a 6)
   const extraTurn = diceValue === 6;
   
+  // Add a log message
+  const currentPlayer = PLAYERS[gameState.currentPlayerIndex];
+  const log = [
+    ...gameState.log,
+    `${currentPlayer.charAt(0).toUpperCase() + currentPlayer.slice(1)} rolled a ${diceValue}${extraTurn ? ' and gets an extra turn!' : '.'}`
+  ];
+  
   return {
     ...gameState,
     diceValue,
     diceRolled: true,
     extraTurn,
     tokenMoved: false, // Reset tokenMoved flag
+    log,
   };
 };
 
@@ -117,6 +128,99 @@ export const getValidMoves = (gameState) => {
 };
 
 /**
+ * Check if a token would capture an opponent's token
+ * 
+ * @param {Object} gameState - The current game state
+ * @param {string} player - The player color
+ * @param {number} position - The position on the board
+ * @returns {Array} Array of [player, tokenIndex] pairs that would be captured
+ */
+export const checkForCaptures = (gameState, player, position) => {
+  const captures = [];
+  
+  // Only check for captures on the main track (not in home stretches)
+  if (position >= 0 && position < BOARD_SIZE) {
+    // Check each player's tokens
+    Object.entries(gameState.tokenPositions).forEach(([otherPlayer, tokens]) => {
+      // Skip the current player's tokens
+      if (otherPlayer !== player) {
+        // Check each token
+        tokens.forEach((tokenPosition, tokenIndex) => {
+          // If the token is on the main track and at the same position
+          if (typeof tokenPosition === 'number' && tokenPosition === position) {
+            captures.push([otherPlayer, tokenIndex]);
+          }
+        });
+      }
+    });
+  }
+  
+  return captures;
+};
+
+/**
+ * Update game statistics in localStorage
+ * 
+ * @param {string} winner - The color of the winning player
+ */
+export const updateGameStats = (winner) => {
+  // Get existing stats from localStorage or initialize if not present
+  let stats = JSON.parse(localStorage.getItem('ludoGameStats')) || {
+    gamesPlayed: 0,
+    wins: 0,
+    losses: 0
+  };
+  
+  // Update stats based on winner
+  stats.gamesPlayed += 1;
+  
+  if (winner === 'red') { // Assuming 'red' is the human player
+    stats.wins += 1;
+  } else {
+    stats.losses += 1;
+  }
+  
+  // Save updated stats to localStorage
+  localStorage.setItem('ludoGameStats', JSON.stringify(stats));
+  
+  return stats;
+};
+
+/**
+ * Check if a player has won the game
+ * 
+ * @param {Object} gameState - The current game state
+ * @returns {Object} The updated game state with winner information
+ */
+export const checkWinner = (gameState) => {
+  // Check if any player has all tokens in the home position
+  for (const player of PLAYERS) {
+    const playerTokens = gameState.tokenPositions[player];
+    const allTokensHome = playerTokens.every(pos => pos === 'home');
+    
+    if (allTokensHome) {
+      // Update game statistics
+      updateGameStats(player);
+      
+      // Add a log message
+      const log = [
+        ...gameState.log,
+        `${player.charAt(0).toUpperCase() + player.slice(1)} has won the game!`
+      ];
+      
+      return {
+        ...gameState,
+        status: 'finished',
+        winner: player,
+        log,
+      };
+    }
+  }
+  
+  return gameState;
+};
+
+/**
  * Move a token and update the game state
  * 
  * @param {Object} gameState - The current game state
@@ -150,20 +254,43 @@ export const moveToken = (gameState, tokenIndex) => {
   // Update the token position
   currentTokens[tokenIndex] = newPosition;
   
-  // Check if the player has won (all tokens are home)
-  const hasWon = currentTokens.every(pos => pos === 'home');
+  // Check for captures
+  let updatedTokenPositions = { ...tokenPositions, [currentPlayer]: currentTokens };
+  let log = [...gameState.log];
   
-  // Update the game state
-  const updatedGameState = {
+  if (typeof newPosition === 'number') {
+    const captures = checkForCaptures(gameState, currentPlayer, newPosition);
+    
+    // Process captures
+    captures.forEach(([capturedPlayer, capturedTokenIndex]) => {
+      // Send the captured token back to start
+      updatedTokenPositions = {
+        ...updatedTokenPositions,
+        [capturedPlayer]: [
+          ...updatedTokenPositions[capturedPlayer].slice(0, capturedTokenIndex),
+          'start',
+          ...updatedTokenPositions[capturedPlayer].slice(capturedTokenIndex + 1)
+        ]
+      };
+      
+      // Add a log message
+      log.push(`${currentPlayer.charAt(0).toUpperCase() + currentPlayer.slice(1)} captured ${capturedPlayer}'s token!`);
+    });
+  }
+  
+  // Add a log message for the move
+  log.push(`${currentPlayer.charAt(0).toUpperCase() + currentPlayer.slice(1)} moved token ${tokenIndex + 1}${newPosition === 'home' ? ' to home!' : '.'}`);
+  
+  // Create updated game state with the new token positions and log
+  let updatedGameState = {
     ...gameState,
-    tokenPositions: {
-      ...tokenPositions,
-      [currentPlayer]: currentTokens,
-    },
+    tokenPositions: updatedTokenPositions,
     tokenMoved: true,
-    status: hasWon ? 'finished' : gameState.status,
-    winner: hasWon ? currentPlayer : gameState.winner,
+    log,
   };
+  
+  // Check if the player has won
+  updatedGameState = checkWinner(updatedGameState);
   
   // If the player didn't roll a 6 or has already moved a token after rolling a 6,
   // move to the next player's turn
@@ -188,6 +315,16 @@ export const endTurn = (gameState) => {
   
   // Move to the next player
   const nextPlayerIndex = (gameState.currentPlayerIndex + 1) % PLAYERS.length;
+  const nextPlayer = PLAYERS[nextPlayerIndex];
+  
+  // Add a log message
+  const log = [
+    ...gameState.log,
+    `It's ${nextPlayer.charAt(0).toUpperCase() + nextPlayer.slice(1)}'s turn.`
+  ];
+  
+  // Limit the log to the last 10 messages
+  const limitedLog = log.slice(-10);
   
   return {
     ...gameState,
@@ -196,5 +333,6 @@ export const endTurn = (gameState) => {
     diceRolled: false,
     tokenMoved: false,
     extraTurn: false,
+    log: limitedLog,
   };
 }; 
