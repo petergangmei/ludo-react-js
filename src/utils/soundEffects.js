@@ -18,16 +18,18 @@ const SOUND_URLS = {
 
 // Cache for loaded sounds
 const soundCache = {};
+// Flag to track if we've shown the warning about missing sound files
+let hasShownMissingSoundWarning = false;
 
 /**
  * Load a sound from URL
  * 
  * @param {string} soundName - The name of the sound to load
- * @returns {Promise<HTMLAudioElement>} A promise that resolves to the loaded audio element
+ * @returns {Promise<HTMLAudioElement|null>} A promise that resolves to the loaded audio element or null if loading fails
  */
 export const loadSound = async (soundName) => {
   if (!SOUND_URLS[soundName]) {
-    console.warn(`Sound "${soundName}" not found`);
+    console.warn(`Sound "${soundName}" not found in SOUND_URLS`);
     return null;
   }
   
@@ -37,14 +39,30 @@ export const loadSound = async (soundName) => {
   
   try {
     const audio = new Audio(SOUND_URLS[soundName]);
-    await new Promise((resolve, reject) => {
-      audio.addEventListener('canplaythrough', resolve);
-      audio.addEventListener('error', reject);
+    
+    // Set up a timeout to avoid hanging if the file doesn't exist
+    const loadPromise = new Promise((resolve, reject) => {
+      audio.addEventListener('canplaythrough', () => resolve(audio));
+      audio.addEventListener('error', (e) => {
+        // Only show the warning once to avoid console spam
+        if (!hasShownMissingSoundWarning) {
+          console.warn('Sound files are missing. This is expected in development if you haven\'t added the actual sound files yet.');
+          hasShownMissingSoundWarning = true;
+        }
+        resolve(null); // Resolve with null instead of rejecting
+      });
+      
+      // Set a timeout in case the file doesn't exist
+      setTimeout(() => resolve(null), 1000);
+      
       audio.load();
     });
     
-    soundCache[soundName] = audio;
-    return audio;
+    const loadedAudio = await loadPromise;
+    if (loadedAudio) {
+      soundCache[soundName] = loadedAudio;
+    }
+    return loadedAudio;
   } catch (error) {
     console.error(`Failed to load sound "${soundName}":`, error);
     return null;
@@ -56,7 +74,7 @@ export const loadSound = async (soundName) => {
  * 
  * @param {string} soundName - The name of the sound to play
  * @param {number} volume - The volume level (0-1)
- * @returns {Promise<void>} A promise that resolves when the sound starts playing
+ * @returns {Promise<void>} A promise that resolves when the sound starts playing or immediately if sound can't be played
  */
 export const playSound = async (soundName, volume = 1.0) => {
   // Check if sound is enabled in settings
@@ -70,21 +88,29 @@ export const playSound = async (soundName, volume = 1.0) => {
     if (audio) {
       audio.volume = volume;
       audio.currentTime = 0;
-      await audio.play();
+      await audio.play().catch(err => {
+        // Autoplay might be blocked by browser policy
+        console.warn(`Couldn't play sound "${soundName}":`, err);
+      });
     }
   } catch (error) {
-    console.error(`Failed to play sound "${soundName}":`, error);
+    // Silently fail - we don't want sound errors to break the game
+    console.debug(`Failed to play sound "${soundName}":`, error);
   }
 };
 
 /**
  * Preload all game sounds
  * 
- * @returns {Promise<void>} A promise that resolves when all sounds are loaded
+ * @returns {Promise<void>} A promise that resolves when all sounds are loaded or loading attempts are complete
  */
 export const preloadSounds = async () => {
-  const promises = Object.keys(SOUND_URLS).map(soundName => loadSound(soundName));
-  await Promise.all(promises);
+  try {
+    const promises = Object.keys(SOUND_URLS).map(soundName => loadSound(soundName));
+    await Promise.all(promises);
+  } catch (error) {
+    console.warn('Failed to preload some sounds:', error);
+  }
 };
 
 /**
@@ -103,4 +129,4 @@ export const toggleSound = (enabled) => {
  */
 export const isSoundEnabled = () => {
   return localStorage.getItem('ludoSoundEnabled') !== 'false';
-}; 
+};

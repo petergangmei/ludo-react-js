@@ -126,7 +126,7 @@ function Dice({ onRoll, disabled = false }) {
         ${getAnimationClasses()}`}
       onClick={handleRoll}
     >
-      <style jsx>{`
+      <style>{`
         .dot {
           width: 8px;
           height: 8px;
