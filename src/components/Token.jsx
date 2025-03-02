@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { areAnimationsEnabled } from '../utils/animations';
 
 /**
  * Token Component
@@ -15,6 +16,15 @@ import React from 'react';
  * @param {Function} props.onSelect - Callback function called when the token is selected
  */
 function Token({ color, id, isHome, isStart, isSelectable, onSelect }) {
+  // State for animation
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [animationsEnabled, setAnimationsEnabled] = useState(true);
+  
+  // Check if animations are enabled
+  useEffect(() => {
+    setAnimationsEnabled(areAnimationsEnabled());
+  }, []);
+  
   // Define color classes based on the token color
   const colorClasses = {
     red: 'bg-red-500 hover:bg-red-600',
@@ -23,9 +33,29 @@ function Token({ color, id, isHome, isStart, isSelectable, onSelect }) {
     blue: 'bg-blue-500 hover:bg-blue-600',
   };
   
+  // Define animation classes
+  const getAnimationClass = () => {
+    if (!animationsEnabled) return '';
+    
+    if (isSelectable) {
+      return 'animate-pulse';
+    } else if (isHome) {
+      return 'animate-bounce';
+    } else if (isAnimating) {
+      return 'animate-spin';
+    }
+    return '';
+  };
+  
   // Handle token click
   const handleClick = () => {
     if (isSelectable && onSelect) {
+      // Trigger animation
+      if (animationsEnabled) {
+        setIsAnimating(true);
+        setTimeout(() => setIsAnimating(false), 500);
+      }
+      
       onSelect(id);
     }
   };
@@ -35,6 +65,7 @@ function Token({ color, id, isHome, isStart, isSelectable, onSelect }) {
       className={`w-8 h-8 rounded-full ${colorClasses[color]} shadow-md flex items-center justify-center text-white font-bold
         ${isSelectable ? 'cursor-pointer transform hover:scale-110 ring-2 ring-white' : 'opacity-80'}
         ${isHome ? 'border-2 border-white' : ''}
+        ${getAnimationClass()}
         transition-all duration-200`}
       onClick={handleClick}
     >

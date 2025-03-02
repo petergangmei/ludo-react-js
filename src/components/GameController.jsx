@@ -3,8 +3,11 @@ import { Link } from 'react-router-dom';
 import GameBoard from './GameBoard';
 import Dice from './Dice';
 import PlayerInfo from './PlayerInfo';
+import SoundToggle from './SoundToggle';
+import AnimationToggle from './AnimationToggle';
 import { createInitialGameState, rollDice, getValidMoves, moveToken, PLAYERS } from '../game-logic/gameState';
 import { delayedAiMove } from '../game-logic/aiController';
+import { playSound, preloadSounds } from '../utils/soundEffects';
 
 /**
  * GameController Component
@@ -17,6 +20,11 @@ function GameController() {
   const [gameState, setGameState] = useState(createInitialGameState());
   const [validMoves, setValidMoves] = useState([]);
   const [isAiThinking, setIsAiThinking] = useState(false);
+  
+  // Preload sounds when component mounts
+  useEffect(() => {
+    preloadSounds();
+  }, []);
   
   // Update valid moves when game state changes
   useEffect(() => {
@@ -39,8 +47,34 @@ function GameController() {
     }
   }, [gameState, isAiThinking]);
   
+  // Play sounds when game state changes
+  useEffect(() => {
+    // Check if this is the initial render
+    if (gameState.log.length > 0) {
+      const lastLogMessage = gameState.log[gameState.log.length - 1];
+      
+      // Play sound based on the last log message
+      if (lastLogMessage.includes('rolled')) {
+        playSound('diceRoll');
+      } else if (lastLogMessage.includes('captured')) {
+        playSound('tokenCapture');
+      } else if (lastLogMessage.includes('to home')) {
+        playSound('tokenHome');
+      } else if (lastLogMessage.includes('moved token')) {
+        playSound('tokenMove');
+      } else if (lastLogMessage.includes('has won the game')) {
+        if (lastLogMessage.includes('Red has won')) {
+          playSound('gameWin');
+        } else {
+          playSound('gameLose');
+        }
+      }
+    }
+  }, [gameState.log]);
+  
   // Handle dice roll
   const handleDiceRoll = (value) => {
+    playSound('buttonClick');
     setGameState(prevState => rollDice(prevState));
   };
   
@@ -75,11 +109,15 @@ function GameController() {
         {/* Game Header */}
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold text-blue-800">Ludo King</h1>
-          <Link to="/">
-            <button className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-              Back to Home
-            </button>
-          </Link>
+          <div className="flex items-center gap-4">
+            <SoundToggle />
+            <AnimationToggle />
+            <Link to="/">
+              <button className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                Back to Home
+              </button>
+            </Link>
+          </div>
         </div>
         
         <div className="flex flex-col md:flex-row gap-6">
