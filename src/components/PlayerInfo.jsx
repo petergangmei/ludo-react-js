@@ -20,8 +20,6 @@ function PlayerInfo({ currentPlayer, isPlayerTurn, gameState }) {
   const colorClasses = {
     red: 'bg-red-100 border-red-500 text-red-800',
     green: 'bg-green-100 border-green-500 text-green-800',
-    yellow: 'bg-yellow-100 border-yellow-500 text-yellow-800',
-    blue: 'bg-blue-100 border-blue-500 text-blue-800',
   };
 
   // Get token counts for all players
@@ -54,26 +52,27 @@ function PlayerInfo({ currentPlayer, isPlayerTurn, gameState }) {
           </div>
           {gameState.status === 'finished' && (
             <div className="text-green-600 font-bold">
-              {gameState.winner === 'red' ? 'You Win!' : `${gameState.winner.charAt(0).toUpperCase() + gameState.winner.slice(1)} Wins!`}
+              {gameState.winner === 'red' ? 'You Win!' : 'Green Wins!'}
             </div>
           )}
         </div>
       </div>
       
-      <div className="grid grid-cols-4 gap-2">
+      <div className="grid grid-cols-2 gap-4">
         {PLAYERS.map(player => {
           const counts = getTokenCounts(player);
           const isCurrentPlayer = player === currentPlayer;
+          const playerLabel = player === 'red' ? 'You (Red)' : 'AI (Green)';
           
           return (
             <div 
               key={player}
-              className={`p-2 rounded border ${colorClasses[player]} ${isCurrentPlayer ? 'ring-2 ring-offset-1 ring-blue-400' : 'opacity-70'}`}
+              className={`p-3 rounded border-2 ${colorClasses[player]} ${isCurrentPlayer ? 'ring-2 ring-offset-1 ring-blue-400' : 'opacity-80'}`}
             >
-              <div className="text-center text-sm font-medium mb-1">
-                {player.charAt(0).toUpperCase() + player.slice(1)}
+              <div className="text-center text-sm font-medium mb-2">
+                {playerLabel}
               </div>
-              <div className="flex justify-around text-xs">
+              <div className="flex justify-around text-sm">
                 <div className="text-center">
                   <div>Start</div>
                   <div className="font-bold">{counts.start}</div>

@@ -34,12 +34,12 @@ function GameController() {
     }
   }, [gameState]);
   
-  // Handle AI turns
+  // Handle AI turns for green player
   useEffect(() => {
     const currentPlayer = PLAYERS[gameState.currentPlayerIndex];
-    const isAiTurn = currentPlayer !== 'red'; // Assuming 'red' is the human player
+    const isGreenTurn = currentPlayer === 'green'; // Green is AI controlled
     
-    if (isAiTurn && !isAiThinking && gameState.status !== 'finished') {
+    if (isGreenTurn && !isAiThinking && gameState.status !== 'finished') {
       // Set AI thinking state to prevent multiple AI moves
       setIsAiThinking(true);
       
@@ -89,7 +89,7 @@ function GameController() {
   const currentPlayer = PLAYERS[gameState.currentPlayerIndex];
   
   // Determine if it's the human player's turn
-  const isPlayerTurn = currentPlayer === 'red'; // Assuming 'red' is the human player
+  const isPlayerTurn = currentPlayer === 'red'; // Red is the human player
   
   // Determine if the dice can be rolled
   const canRollDice = isPlayerTurn && !isAiThinking && (!gameState.diceRolled || (gameState.extraTurn && gameState.tokenMoved));
@@ -109,7 +109,7 @@ function GameController() {
         {/* Game board and controls */}
         <div className="flex-1">
           <div className="mb-4 flex justify-between items-center">
-            <h1 className="text-2xl font-bold text-blue-800">Ludo King</h1>
+            <h1 className="text-2xl font-bold text-blue-800">Ludo King (2 Players)</h1>
             <div className="flex space-x-2">
               <AnimationToggle />
               <Link to="/" className="p-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors">

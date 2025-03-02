@@ -6,7 +6,7 @@
  */
 
 // Constants for the game
-export const PLAYERS = ['red', 'green', 'yellow', 'blue'];
+export const PLAYERS = ['red', 'green']; // Only red and green players for a two-player game
 export const TOKENS_PER_PLAYER = 4;
 export const BOARD_SIZE = 52; // Number of cells in the main track
 export const HOME_STRETCH_SIZE = 6; // Number of cells in the home stretch
@@ -14,7 +14,7 @@ export const HOME_STRETCH_SIZE = 6; // Number of cells in the home stretch
 // Initial game state
 export const createInitialGameState = () => {
   return {
-    // Current player index (0-3)
+    // Current player index (0-1)
     currentPlayerIndex: 0,
     
     // Current dice value (1-6)
@@ -37,8 +37,6 @@ export const createInitialGameState = () => {
     tokenPositions: {
       red: Array(TOKENS_PER_PLAYER).fill('start'),
       green: Array(TOKENS_PER_PLAYER).fill('start'),
-      yellow: Array(TOKENS_PER_PLAYER).fill('start'),
-      blue: Array(TOKENS_PER_PLAYER).fill('start'),
     },
     
     // Game status
