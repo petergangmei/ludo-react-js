@@ -1,0 +1,162 @@
+---
+description: rules
+globs: 
+alwaysApply: false
+---
+# CURSORRULES.md
+
+This file outlines the project structure, coding conventions, and development roadmap for the Ludo King React App (Single-Player vs AI). Follow these guidelines to ensure a consistent and maintainable codebase.
+
+---
+
+## 1. Project Overview
+
+- **Project Name:** Ludo King React App (Single-Player)
+- **Description:** A digital Ludo game where users play against an AI opponent. All game logic, state management, and AI functionality are implemented on the client side using React.js and Tailwind CSS with plain JavaScript.
+- **Objectives:**
+  - Deliver an engaging Ludo experience in single-player mode against an AI.
+  - Build a responsive and interactive UI using React and Tailwind CSS.
+  - Implement robust game mechanics and AI decision logic in JavaScript.
+
+---
+
+## 2. Directory & File Structure
+
+ludo-king-app/ ├── public/ │ ├── index.html # Main HTML file │ └── assets/ # Static assets (images, icons, etc.) ├── src/ │ ├── components/ # Reusable UI components │ │ ├── Button.js │ │ ├── Modal.js │ │ ├── Loader.js │ │ ├── Header.js │ │ └── Footer.js │ ├── pages/ # Application pages │ │ ├── HomePage.js │ │ ├── GamePage.js │ │ └── InstructionsPage.js │ ├── game/ # Game-specific components & logic │ │ ├── GameBoard.js │ │ ├── Dice.js │ │ ├── Token.js │ │ ├── GameController.js │ │ ├── PlayerInfo.js │ │ └── AIController.js │ ├── utils/ # Utility functions and constants │ ├── styles/ # Tailwind CSS config and custom styles │ ├── App.js # Main React application file │ └── index.js # Application entry point ├── .gitignore ├── package.json └── CURSORRULES.md # (This file)
+
+markdown
+Copy
+Edit
+
+---
+
+## 3. Pages and Their Components
+
+### Home Page
+- **Purpose:** Introduce the game and allow users to start playing.
+- **Components:**
+  - **Hero Banner:** Brief introduction and game overview.
+  - **Start Game Button:** Initiates the game against the AI.
+  - **Navigation Bar:** (Optional) Links to Instructions and settings.
+
+### Game Screen (Game Board Page)
+- **Purpose:** Main gameplay area for Ludo.
+- **Components:**
+  - **GameBoard:** Renders the Ludo board layout, including safe zones and token tracks.
+  - **Dice:** Manages dice roll animations and outcome display.
+  - **Token:** Visual representation of each player's tokens.
+  - **GameController:** Handles game state, turn switching, and move validation.
+  - **PlayerInfo:** Displays current turn and player details (human vs AI).
+  - **Status Display:** Provides real-time game updates (e.g., "Your Turn", "AI is thinking...").
+
+### Instructions / Help Page (Optional)
+- **Purpose:** Explain game rules and provide gameplay instructions.
+- **Components:**
+  - **Game Rules Section:** Outlines how to play Ludo.
+  - **FAQ / Help Section:** Answers common gameplay questions.
+
+---
+
+## 4. Reusable Components
+
+### General UI Components
+- **Header/Navbar:**  
+  - Contains navigation links (Home, Instructions, etc.).
+- **Footer:**  
+  - Displays credits and links to documentation or support.
+- **Button:**  
+  - A customizable button used throughout the app.
+- **Modal:**  
+  - For dialogs (game over messages, restart confirmations, etc.).
+- **Loader/Spinner:**  
+  - Indicates processing states (e.g., AI thinking).
+
+### Game-Specific Components
+- **GameBoard:**  
+  - Renders the full Ludo board layout.
+- **Dice:**  
+  - Animates dice rolls and displays outcomes.
+- **Token:**  
+  - Represents player tokens on the board.
+- **GameController:**  
+  - Orchestrates game flow, validates moves, and manages turns.
+- **PlayerInfo:**  
+  - Displays details like turn indicators and scores.
+- **AIController:**  
+  - Implements the AI logic for opponent moves.
+
+---
+
+## 5. Development Roadmap & Steps
+
+### Phase 1: Planning and Setup
+- **Finalize Requirements:**  
+  - Review and finalize the scope and design.
+  - Create initial wireframes and UI/UX mockups.
+- **Setup Environment:**  
+  - Initialize the project using Create React App or Vite.
+  - Configure Tailwind CSS.
+  - Establish the project directory structure.
+
+### Phase 2: Core Feature Implementation
+- **UI & Navigation:**  
+  - Build the Home Page and Navigation Bar.
+  - Set up simple routing for navigation between pages.
+- **Game Board & Game Logic:**  
+  - Develop the GameBoard component with proper Ludo layout.
+  - Implement dice roll logic and token movement.
+  - Create the GameController for managing game state and turns.
+- **AI Integration:**  
+  - Develop the AIController in JavaScript with basic logic.
+  - Integrate AI moves into the game loop; test for fairness.
+
+### Phase 3: UI Enhancements and Testing
+- **Enhance UI/UX:**  
+  - Refine animations, transitions, and responsive layouts using Tailwind CSS.
+  - Add status displays and user feedback (e.g., turn indicators).
+- **Testing:**  
+  - Write unit tests for core game logic components using Jest.
+  - Perform integration tests to validate overall gameplay.
+- **Documentation:**  
+  - Update inline comments and developer documentation.
+  - Create a user manual or in-app instructions if needed.
+
+### Phase 4: Deployment and Maintenance
+- **Deployment:**  
+  - Deploy the app to a hosting service (e.g., Vercel, Netlify).
+- **Maintenance & Future Enhancements:**  
+  - Monitor user feedback.
+  - Plan future features like multiple AI difficulty levels, enhanced animations, or local leaderboards.
+
+---
+
+## 6. Coding Conventions & Best Practices
+
+- **Language & Framework:**  
+  - Use JavaScript (not TypeScript) for all code.
+  - Use React functional components with hooks for state management.
+- **Styling:**  
+  - Use Tailwind CSS classes for styling.
+  - Maintain a mobile-first design approach.
+- **File & Folder Naming:**  
+  - Use **PascalCase** for component filenames (e.g., `GameBoard.js`, `Header.js`).
+  - Use **camelCase** for utility functions and non-component files.
+- **Code Quality:**  
+  - Write modular, well-documented code.
+  - Keep components small and focused on a single responsibility.
+- **State Management:**  
+  - Use React’s built-in hooks (e.g., `useState`, `useEffect`) for local state management.
+- **Testing:**  
+  - Write unit and integration tests using Jest.
+  - Ensure thorough test coverage for game logic and AI behavior.
+
+---
+
+## 7. Final Notes
+
+- **Maintainability:**  
+  - Follow these rules to ensure the codebase remains organized, scalable, and easy to understand.
+- **Evolution:**  
+  - As the project evolves, update this file to reflect new components, structures, or guidelines.
+
+Happy coding!
