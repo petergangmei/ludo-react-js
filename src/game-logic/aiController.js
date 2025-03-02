@@ -20,26 +20,28 @@ import { getValidMoves, moveToken, rollDice, checkForCaptures } from './gameStat
  * @returns {Object} The updated game state after the AI move
  */
 export const makeAiMove = (gameState) => {
-  // Roll the dice
-  const stateAfterRoll = rollDice(gameState);
+  // If the dice hasn't been rolled yet, don't do anything
+  if (!gameState.diceRolled) {
+    return gameState;
+  }
   
   // Get valid moves
-  const validMoves = getValidMoves(stateAfterRoll);
+  const validMoves = getValidMoves(gameState);
   
-  // If there are no valid moves, end the turn
+  // If there are no valid moves, return the current state
+  // The GameController will handle ending the turn
   if (validMoves.length === 0) {
     return {
-      ...stateAfterRoll,
-      diceRolled: true,
-      tokenMoved: true, // Force the turn to end
+      ...gameState,
+      tokenMoved: true, // Mark as moved so the turn can end
     };
   }
   
   // Choose a token to move based on a simple heuristic
-  const tokenIndex = chooseTokenToMove(stateAfterRoll, validMoves);
+  const tokenIndex = chooseTokenToMove(gameState, validMoves);
   
   // Move the chosen token
-  return moveToken(stateAfterRoll, tokenIndex);
+  return moveToken(gameState, tokenIndex);
 };
 
 /**
@@ -57,7 +59,7 @@ export const makeAiMove = (gameState) => {
  */
 const chooseTokenToMove = (gameState, validMoves) => {
   const { currentPlayerIndex, diceValue, tokenPositions } = gameState;
-  const currentPlayer = ['red', 'green', 'yellow', 'blue'][currentPlayerIndex];
+  const currentPlayer = ['red', 'green'][currentPlayerIndex];
   const currentTokens = tokenPositions[currentPlayer];
   
   // If there's only one valid move, choose it

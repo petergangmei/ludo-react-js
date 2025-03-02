@@ -64,6 +64,12 @@ function GameController() {
           setGameState(prevState => rollDice(prevState));
           setIsAiThinking(false);
         }, 1000);
+      } else if (gameState.diceRolled && gameState.tokenMoved && !gameState.extraTurn) {
+        // If AI has completed its turn and didn't get an extra turn, manually end its turn
+        setTimeout(() => {
+          setGameState(prevState => endTurn(prevState));
+          setIsAiThinking(false);
+        }, 1000);
       } else {
         // AI turn is complete
         setIsAiThinking(false);
